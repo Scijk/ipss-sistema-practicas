@@ -133,6 +133,66 @@ docker compose up -d
 
 Esto crea un contenedor con la imagen `postgres:15-alpine` y prepara la base de datos `practicas_db`.
 
+## Scripts de base de datos y datos semilla
+
+El proyecto incluye dos niveles de inicialización:
+
+1. `src/main/resources/schema.sql`: crea la estructura de la base de datos.
+2. `src/main/resources/data.sql`: inserta registros de prueba para verificar el flujo de la API.
+3. `db/init-db.sql`: script manual para recrear la BD y cargar datos semilla desde la línea de comandos.
+
+### Inicialización automática con Spring Boot
+
+Cuando la aplicación arranca, Spring Boot ejecuta automáticamente `schema.sql` y `data.sql` porque la configuración en `application.properties` usa:
+
+```properties
+spring.sql.init.mode=always
+```
+
+Esto permite que, al iniciar la app, se creen las tablas y se inserten los registros semilla si la base de datos está vacía.
+
+### Inicialización manual con psql (si tienes cliente local)
+
+Desde la raíz del proyecto:
+
+```bash
+psql -h localhost -U postgres -d practicas_db -f db/init-db.sql
+```
+
+### Inicialización manual usando Docker (recomendado en este entorno)
+
+Si no tienes `psql` instalado localmente, puedes copiar el script al contenedor y ejecutarlo directamente:
+
+```bash
+docker cp db/init-db.sql practicas-postgres:/tmp/init-db.sql
+docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/init-db.sql
+```
+
+También puedes cargar solo los datos semilla:
+
+```bash
+docker cp db/seed.sql practicas-postgres:/tmp/seed.sql
+docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/seed.sql
+```
+
+Si deseas limpiar y reprovisionar la base de datos desde cero:
+
+```bash
+docker exec -i practicas-postgres psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS practicas_db;"
+docker exec -i practicas-postgres psql -U postgres -d postgres -c "CREATE DATABASE practicas_db;"
+docker cp db/init-db.sql practicas-postgres:/tmp/init-db.sql
+docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/init-db.sql
+```
+
+### Verificar datos semilla
+
+Puedes consultar una tabla de prueba con:
+
+```bash
+docker exec -i practicas-postgres psql -U postgres -d practicas_db -c "SELECT * FROM usuarios;"
+docker exec -i practicas-postgres psql -U postgres -d practicas_db -c "SELECT * FROM practicas;"
+```
+
 ## Levantar el proyecto
 
 ### 1) Compilar
