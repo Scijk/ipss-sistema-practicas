@@ -1,69 +1,81 @@
 # IPSS Sistema de Prácticas
 
-Proyecto Spring Boot 3.3.4 para la gestión de prácticas profesionales de estudiantes egresados de enseñanza media, desarrollado con Java 21 y PostgreSQL 15.
+Proyecto Spring Boot 3.3.4 para la gestión de prácticas profesionales, desarrollado con Java 21 y PostgreSQL 15. La aplicación permite registrar, consultar, actualizar y eliminar información relacionada con estudiantes, profesores, empresas, jefes directos y prácticas profesionales.
 
 ## Descripción del proyecto
 
-El sistema permite gestionar el registro de prácticas profesionales con distintos niveles de acceso según el tipo de usuario:
+El sistema resuelve la necesidad del colegio técnico profesional de gestionar las prácticas profesionales de sus estudiantes egresados de enseñanza media. La solución incorpora distintos niveles de acceso y validaciones para asegurar que el flujo de información sea seguro, ordenado y consistente.
+
+### Roles y permisos
 
 - Estudiantes: pueden registrar y consultar sus prácticas.
-- Profesores: pueden supervisar, consultar y gestionar registros de prácticas.
+- Profesores: pueden supervisar y gestionar registros de prácticas.
+- Administrador o backend: gestión completa de usuarios, empresas y otras entidades asociadas.
 
-La solución está desarrollada con una arquitectura en capas:
+### Arquitectura implementada
 
-- `entity`: entidades JPA
-- `repository`: repositorios para acceso a datos
-- `service`: lógica de negocio
+La solución sigue un patrón de capas:
+
+- `entity`: entidades JPA del modelo de datos
+- `repository`: acceso a base de datos con Spring Data JPA
+- `service`: lógica de negocio y validaciones
 - `controller`: endpoints REST
-- `dto`: objetos de transferencia
+- `dto`: transferencias de datos
+- `exception`: manejadores de errores personalizados
 - `enums`: enumeraciones del dominio
 
 ## Modelo de base de datos
 
-Se implementa una estructura relacional para manejar:
+El esquema incluye las siguientes entidades principales:
 
-- Usuarios
-- Estudiantes
-- Profesores
-- Empresas
-- Jefes directos
-- Prácticas profesionales
-
-### Entidades principales
-
-- `Usuario`
-- `Estudiante`
-- `Profesor`
-- `Empresa`
-- `JefeDirecto`
-- `Practica`
+- `usuarios`
+- `estudiantes`
+- `profesores`
+- `empresas`
+- `jefes_directos`
+- `practicas`
 
 ### Relaciones principales
 
-- Un `Usuario` puede ser `ESTUDIANTE` o `PROFESOR`.
-- Un `Estudiante` tiene un `Usuario` asociado.
-- Un `Profesor` tiene un `Usuario` asociado.
-- Una `Practica` pertenece a un `Estudiante`, `Profesor`, `Empresa` y `JefeDirecto`.
-- Una `Empresa` puede tener varios `JefeDirecto` y varias `Practica`.
+- Cada `Usuario` tiene un rol: `ESTUDIANTE` o `PROFESOR`.
+- Cada `Estudiante` está asociado a un `Usuario`.
+- Cada `Profesor` está asociado a un `Usuario`.
+- Cada `Empresa` puede tener varios `JefeDirecto` y varias `Practica`.
+- Cada `JefeDirecto` pertenece a una `Empresa`.
+- Cada `Practica` está asociada a:
+  - un `Estudiante`
+  - un `Profesor`
+  - una `Empresa`
+  - un `JefeDirecto`
 
-## Tecnologías usadas
+### Restricciones y validaciones del modelo
+
+- Email único en usuarios.
+- Email único en empresas.
+- Un usuario no puede duplicarse como estudiante o profesor.
+- La fecha de término no puede ser anterior a la fecha de inicio.
+- La descripción de actividades es obligatoria.
+- El jefe directo debe pertenecer a la empresa indicada.
+
+## Tecnologías utilizadas
 
 - Java 21
 - Spring Boot 3.3.4
 - Spring Web
 - Spring Data JPA
+- Hibernate ORM
 - Spring Validation
 - PostgreSQL 15
+- Docker Compose
 - Maven
-- Docker / Docker Compose
 
 ## Requisitos previos
 
 - Java 21 instalado
 - Maven instalado
-- Docker Desktop o Docker Engine instalado y funcionando
-- Puerto 5432 disponible para PostgreSQL
-- Puerto 8080 disponible para la aplicación
+- Docker Desktop o Docker Engine activo
+- Puerto 5432 libre para PostgreSQL
+- Puerto 8080 libre para la aplicación
 
 ## Estructura del proyecto
 
@@ -76,6 +88,7 @@ ipss-sistema-practicas/
 │   │   │   ├── dto/
 │   │   │   ├── entity/
 │   │   │   ├── enums/
+│   │   │   ├── exception/
 │   │   │   ├── repository/
 │   │   │   ├── service/
 │   │   │   └── PracticasProfesionalesApplication.java
@@ -87,14 +100,17 @@ ipss-sistema-practicas/
 ├── docker-compose.yml
 ├── pom.xml
 ├── README.md
-└── .gitignore
+├── .gitignore
+└── target/
 ```
 
 ## Configuración de la base de datos
 
-El proyecto usa PostgreSQL con la siguiente configuración por defecto en `src/main/resources/application.properties`:
+La conexión a PostgreSQL por defecto está definida en `src/main/resources/application.properties`:
 
 ```properties
+spring.application.name=ipss-sistema-practicas
+
 spring.datasource.url=jdbc:postgresql://localhost:5432/practicas_db
 spring.datasource.username=postgres
 spring.datasource.password=postgres
@@ -107,56 +123,156 @@ spring.jpa.defer-datasource-initialization=true
 spring.sql.init.mode=always
 ```
 
-La base de datos puede levantarse con Docker Compose usando el archivo `docker-compose.yml`:
+## Levantar PostgreSQL con Docker
+
+Ejecuta:
 
 ```bash
 docker compose up -d
 ```
+
+Esto crea un contenedor con la imagen `postgres:15-alpine` y prepara la base de datos `practicas_db`.
 
 ## Levantar el proyecto
 
-### 1) Levantar PostgreSQL
-
-```bash
-docker compose up -d
-```
-
-### 2) Compilar el proyecto
+### 1) Compilar
 
 ```bash
 mvn clean install
 ```
 
-### 3) Ejecutar la aplicación
+### 2) Ejecutar la aplicación
 
 ```bash
 mvn spring-boot:run
 ```
 
-o desde el IDE con la clase principal:
+También puedes ejecutarlo desde el IDE usando la clase principal:
 
 ```text
 com.ipss.practicas.PracticasProfesionalesApplication
 ```
 
-### URL base de la API
+### URL base
 
 ```text
 http://localhost:8080
 ```
 
-## Endpoints principales
+## CRUD implementado
+
+### Usuarios
+
+- `GET /api/usuarios`
+- `GET /api/usuarios/{id}`
+- `POST /api/usuarios`
+- `PUT /api/usuarios/{id}`
+- `DELETE /api/usuarios/{id}`
+
+### Estudiantes
+
+- `GET /api/estudiantes`
+- `GET /api/estudiantes/{id}`
+- `POST /api/estudiantes`
+- `PUT /api/estudiantes/{id}`
+- `DELETE /api/estudiantes/{id}`
+
+### Profesores
+
+- `GET /api/profesores`
+- `GET /api/profesores/{id}`
+- `POST /api/profesores`
+- `PUT /api/profesores/{id}`
+- `DELETE /api/profesores/{id}`
+
+### Empresas
+
+- `GET /api/empresas`
+- `GET /api/empresas/{id}`
+- `POST /api/empresas`
+- `PUT /api/empresas/{id}`
+- `DELETE /api/empresas/{id}`
+
+### Jefes directos
+
+- `GET /api/jefes-directos`
+- `GET /api/jefes-directos/{id}`
+- `GET /api/jefes-directos/empresa/{empresaId}`
+- `POST /api/jefes-directos`
+- `PUT /api/jefes-directos/{id}`
+- `DELETE /api/jefes-directos/{id}`
 
 ### Prácticas
 
-- `GET /api/practicas` — listar todas las prácticas
-- `GET /api/practicas/estudiante/{estudianteId}` — listar prácticas por estudiante
-- `GET /api/practicas/profesor/{profesorId}` — listar prácticas por profesor
-- `POST /api/practicas` — crear práctica
-- `PUT /api/practicas/{id}` — actualizar práctica
-- `DELETE /api/practicas/{id}` — eliminar práctica
+- `GET /api/practicas`
+- `GET /api/practicas/{id}`
+- `GET /api/practicas/estudiante/{estudianteId}`
+- `GET /api/practicas/profesor/{profesorId}`
+- `POST /api/practicas`
+- `PUT /api/practicas/{id}`
+- `DELETE /api/practicas/{id}`
 
-## Ejemplo de payload para crear práctica
+## Ejemplos de payload
+
+### Crear usuario
+
+```json
+{
+  "nombre": "Ana",
+  "apellido": "García",
+  "email": "ana@mail.com",
+  "password": "123456",
+  "rol": "ESTUDIANTE"
+}
+```
+
+### Crear estudiante
+
+```json
+{
+  "usuarioId": 1,
+  "carrera": "Informática",
+  "telefono": "987654321",
+  "direccion": "Av. Central 123"
+}
+```
+
+### Crear profesor
+
+```json
+{
+  "usuarioId": 2,
+  "especialidad": "Programación",
+  "cargo": "Docente"
+}
+```
+
+### Crear empresa
+
+```json
+{
+  "nombre": "IPSS Tech",
+  "direccion": "Calle Falsa 123",
+  "telefono": "5551234",
+  "email": "contacto@ipsstech.cl",
+  "descripcion": "Empresa de desarrollo de software"
+}
+```
+
+### Crear jefe directo
+
+```json
+{
+  "nombre": "Carlos",
+  "apellido": "Molina",
+  "cargo": "Ingeniero de proyecto",
+  "telefono": "912345678",
+  "email": "carlos@ipsstech.cl",
+  "empresaId": 1
+}
+```
+
+### Crear práctica
 
 ```json
 {
@@ -164,24 +280,54 @@ http://localhost:8080
   "profesorId": 1,
   "empresaId": 1,
   "jefeDirectoId": 1,
-  "fechaInicio": "2026-01-10",
-  "fechaTermino": "2026-03-10",
-  "descripcionActividades": "Desarrollar módulos de backend y participar en revisiones de código."
+  "fechaInicio": "2026-03-10",
+  "fechaTermino": "2026-05-10",
+  "descripcionActividades": "Desarrollar módulos backend y participar en reuniones de coordinación."
 }
 ```
 
-## Observaciones importantes
+## Manejo de errores
 
-- El proyecto usa `schema.sql` para crear la estructura de tablas.
-- La aplicación está preparada para trabajar con JPA y PostgreSQL.
-- Los nombres de las clases actuales pueden mantenerse tal como están, mientras se complete el desarrollo del proyecto.
-- La solución sigue un patrón de capas para separar responsabilidades y facilitar mantenimiento.
+Se implementó un `@RestControllerAdvice` para devolver respuestas estructuradas en caso de:
+
+- recurso no encontrado
+- validación fallida
+- error de negocio
+- argumentos inválidos
+
+Ejemplo de respuesta:
+
+```json
+{
+  "timestamp": "2026-09-06T20:00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "La fecha de término no puede ser menor que la de inicio"
+}
+```
+
+## Validaciones implementadas
+
+- campos obligatorios
+- longitudes máximas
+- email válido
+- contraseña mínima
+- fecha de término >= fecha de inicio
+- relación consistente entre empresa y jefe directo
+- unicidad de usuarios y empresas
+- restricción de roles por entidad
 
 ## Ejecución de pruebas
 
 ```bash
 mvn test
 ```
+
+## Observaciones finales
+
+- El proyecto usa `schema.sql` para crear la estructura inicial de la base de datos.
+- La solución está preparada para ser extendida con autenticación, seguridad y capa de UI.
+- Sigue un patrón de n capas para facilitar mantenimiento, escalabilidad y prueba unitaria.
 
 ## Licencia
 

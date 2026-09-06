@@ -30,6 +30,11 @@ public class PracticaController {
         return practicaService.listarTodas();
     }
 
+    @GetMapping("/{id}")
+    public Practica obtenerPorId(@PathVariable Long id) {
+        return practicaService.obtenerPorId(id);
+    }
+
     @GetMapping("/estudiante/{estudianteId}")
     public List<Practica> listarPorEstudiante(@PathVariable Long estudianteId) {
         return practicaService.listarPorEstudiante(estudianteId);
