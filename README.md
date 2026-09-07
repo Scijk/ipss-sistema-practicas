@@ -26,6 +26,20 @@ La lógica de negocio se encuentra centralizada en la capa de servicios, la pers
 - Maven
 - Docker Compose
 
+### Elección de tecnologías
+
+Se seleccionó Java 21 + Spring Boot 3.3.4 + Maven + PostgreSQL por compatibilidad técnica y por la curva de aprendizaje y dominio disponible en el equipo. Esta combinación permite:
+
+- usar una versión moderna de Java compatible con Spring Boot 3.x
+- aprovechar el ecosistema de Spring para seguridad, JPA y servicios REST de forma rápida y robusta
+- mantener una base de datos relacional confiable y ampliamente usada en entornos académicos y empresariales
+- trabajar con Maven como herramienta estándar de construcción y gestión de dependencias
+- seguir una arquitectura clara y mantenible con alta adopción en proyectos backend Java
+
+La decisión también responde a la necesidad de mantener coherencia entre el lenguaje, el framework, la base de datos y las herramientas de ejecución, evitando incompatibilidades de versión y reduciendo riesgos de configuración.
+
+Además, el desarrollo se apoyó en herramientas de IA (Copilot - MAI-Code-1.1-Flash) para acelerar la generación de boilerplate, análisis de errores, refinamiento de la lógica de negocio, revisión de documentación y validación de endpoints, bajo un modelo de trabajo asistido donde la decisión final y la validación fueron realizadas por el responsable del proyecto. Esto permitió reducir tiempos de implementación y mantener foco en la estructura del sistema, las reglas del negocio y la calidad del resultado.
+
 ## 3. Arquitectura en capas
 
 El proyecto sigue el patrón n capas:
