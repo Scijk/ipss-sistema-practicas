@@ -1,12 +1,20 @@
 ﻿# IPSS Sistema de Prácticas
 
-Sistema backend para gestionar prácticas profesionales con Java 21, Spring Boot, PostgreSQL 15 y JPA. La aplicación sigue una arquitectura en capas y cuenta con autenticación JWT, gestión de usuarios por roles y CRUD para las entidades principales del dominio.
+Backend para la gestión de prácticas profesionales con Java 21, Spring Boot 3.3.4, PostgreSQL 15 y JPA/Hibernate. El proyecto sigue una arquitectura en capas, incorpora autenticación JWT y roles, y expone un CRUD completo para las entidades del dominio académico y empresarial.
 
-## Descripción general
+## 1. Descripción general
 
-El proyecto cubre los procesos necesarios para administrar estudiantes, profesores, empresas, jefes directos y las prácticas profesionales asociadas. Cada entidad se maneja a través de servicios y controladores REST, con validaciones, manejo de excepciones y persistencia en PostgreSQL.
+La aplicación permite administrar:
 
-## Stack tecnológico
+- Usuarios con roles `ESTUDIANTE` y `PROFESOR`
+- Estudiantes con información académica
+- Profesores con especialidad y cargo
+- Empresas y jefes directos
+- Prácticas profesionales con fechas, estado y relación con los actores del proceso
+
+La lógica de negocio se encuentra centralizada en la capa de servicios, la persistencia en repositorios JPA y la exposición de datos a través de controladores REST con DTOs.
+
+## 2. Stack tecnológico
 
 - Java 21
 - Spring Boot 3.3.4
@@ -14,71 +22,122 @@ El proyecto cubre los procesos necesarios para administrar estudiantes, profesor
 - Spring Data JPA
 - PostgreSQL 15 Alpine
 - Spring Security
-- JWT (JJWT)
+- JWT con JJWT
 - Maven
 - Docker Compose
 
-## Arquitectura
+## 3. Arquitectura en capas
 
-El proyecto usa un patrón de n capas:
+El proyecto sigue el patrón n capas:
 
-- `entity`: entidades JPA
-- `repository`: repositorios Spring Data
-- `service`: lógica de negocio
+- `entity`: entidades JPA del dominio
+- `repository`: accesos a base de datos con Spring Data JPA
+- `service`: validaciones y lógica de negocio
 - `controller`: endpoints REST
-- `dto`: objetos de entrada/salida
-- `security`: JWT y configuración de seguridad
-- `exception`: respuestas estandarizadas de errores
+- `dto`: request/response DTOs
+- `security`: JWT, filtros y configuración de seguridad
+- `exception`: manejo centralizado de errores
 
-## Modelo de dominio
+## 4. Modelo de dominio
 
-- `Usuario`: modelo base de autenticación con rol (`ESTUDIANTE` / `PROFESOR`)
-- `Estudiante`: datos académicos del alumno
-- `Profesor`: datos académicos del tutor docente
+Entidades principales:
+
+- `Usuario`: credenciales, email, rol y autenticación
+- `Estudiante`: información académica del estudiante y relación 1:1 con usuario
+- `Profesor`: especialidad, cargo y relación 1:1 con usuario
 - `Empresa`: empresa donde se realiza la práctica
-- `JefeDirecto`: responsable de la empresa
+- `JefeDirecto`: responsable de la empresa y vínculo con la práctica
 - `Practica`: registro principal de la práctica profesional
 
-## Requisitos previos
+Relaciones clave:
+
+- Un usuario puede ser estudiante o profesor
+- Un estudiante puede tener varias prácticas
+- Un profesor puede supervisar varias prácticas
+- Una empresa puede tener varios jefes directos y múltiples prácticas
+- Cada práctica relaciona estudiante, profesor, empresa y jefe directo
+
+## 5. Requisitos previos
 
 - Java 21
 - Maven 3.9+
 - Docker Desktop o Docker Engine
 - PostgreSQL 15 (se levanta con Docker Compose)
 
-## Configuración rápida
+## 6. Configuración por ambiente
 
-### 1. Levantar la base de datos
+El proyecto usa placeholders para externalizar la configuración por perfil (`dev`, `prod`) y por variables de entorno. La configuración base está en:
+
+- `src/main/resources/application.properties`
+- `src/main/resources/application-dev.properties`
+- `src/main/resources/application-prod.properties`
+
+Archivo de referencia:
+
+- `.env.example`
+
+Variables principales:
+
+```properties
+SPRING_PROFILES_ACTIVE=dev
+APP_NAME=ipss-sistema-practicas
+DB_URL=jdbc:postgresql://localhost:5432/practicas_db
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+SERVER_PORT=8080
+JPA_DDL_AUTO=none
+JPA_SHOW_SQL=false
+JPA_FORMAT_SQL=true
+JPA_DEFER_INIT=true
+SQL_INIT_MODE=always
+
+POSTGRES_DB=practicas_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_PORT=5432
+```
+
+También existe configuración JWT con valores por defecto en `JwtService`:
+
+```properties
+jwt.secret=ipss-practicas-secret-key-2026-very-long-value
+jwt.expiration=86400000
+```
+
+En entornos reales se recomienda sobrescribir estas propiedades con variables de entorno o con un archivo `.env` no versionado.
+
+## 7. Ejecutar el proyecto
+
+### 7.1 Levantar la base de datos con Docker
 
 ```bash
 docker compose up -d
 ```
 
-Esto levanta PostgreSQL en el puerto `5432` usando la imagen `postgres:15-alpine`.
+Esto levanta PostgreSQL 15 en el puerto `5432` usando `postgres:15-alpine`.
 
-### 2. Configurar variables de entorno
+### 7.2 Configurar entorno local
 
-La configuración se parametriza para soportar distintos ambientes sin modificar el código. Se recomienda copiar el archivo `.env.example` a `.env` y ajustar los valores según el entorno.
+Copiar el ejemplo de variables:
 
 ```bash
 cp .env.example .env
 ```
 
-Ejemplo de variables:
+Ajustar los valores según el ambiente local o productivo.
 
-```properties
-SPRING_PROFILES_ACTIVE=dev
-DB_URL=jdbc:postgresql://localhost:5432/practicas_db
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-SERVER_PORT=8080
-```
+### 7.3 Ejecutar la aplicación
 
-En `src/main/resources/application.properties` estas mismas propiedades se leen con placeholders y cuentan con valores por defecto, lo que permite trabajar con distintos entornos (`dev`, `prod`, etc.) sin hardcodear secretos ni URLs.
-
-### 3. Ejecutar la aplicación
+En desarrollo:
 
 ```bash
+SPRING_PROFILES_ACTIVE=dev mvn spring-boot:run
+```
+
+O bien, con la variable exportada antes:
+
+```bash
+export SPRING_PROFILES_ACTIVE=dev
 mvn spring-boot:run
 ```
 
@@ -86,11 +145,60 @@ La API queda disponible en:
 
 - http://localhost:8080
 
-## Autenticación y permisos
+## 8. Base de datos y scripts SQL
 
-La app usa JWT para proteger endpoints.
+La carpeta `db/` contiene los scripts principales:
 
-### Login
+- `db/init-db.sql`: recrea el esquema y agrega datos semilla
+- `db/seed.sql`: carga los datos de prueba sin recrear tablas
+
+Ejecutar recreación completa:
+
+```bash
+psql -U postgres -d postgres -f db/init-db.sql
+```
+
+Cargar solo datos semilla:
+
+```bash
+psql -U postgres -d practicas_db -f db/seed.sql
+```
+
+Nota: el esquema se define con restricciones de integridad, claves foráneas, checks y relaciones 1:1 y 1:N según el dominio.
+
+## 9. Datos semilla por defecto
+
+Al inicializar la base de datos se cargan usuarios de prueba para validar la app de inmediato:
+
+- Ana García — estudiante — `ana.garcia@email.com` — password `123456`
+- Luis Pérez — profesor — `luis.perez@email.com` — password `123456`
+- Marta Ruiz — estudiante — `marta.ruiz@email.com` — password `123456`
+
+Las contraseñas se almacenan con `BCryptPasswordEncoder`.
+
+## 10. Seguridad y autenticación
+
+La seguridad se implementa con Spring Security + JWT.
+
+### Roles implementados
+
+- `ESTUDIANTE`
+- `PROFESOR`
+
+### Endpoints públicos
+
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+
+### Protección por rol
+
+Las rutas están protegidas por permisos:
+
+- Estudiantes: acceso de lectura a la mayoría de recursos y lectura del propio perfil
+- Profesores: acceso total a gestión de usuarios, estudiantes, profesores, empresas, jefes directos y prácticas
+- Todas las llamadas deben incluir el header JWT válido
+
+### Login ejemplo
 
 ```http
 POST /api/auth/login
@@ -108,11 +216,11 @@ Respuesta esperada:
 {
   "token": "eyJ...",
   "email": "ana.garcia@email.com",
-  "rol": "ESTUDIANTE"
+  "role": "ESTUDIANTE"
 }
 ```
 
-### Registro
+### Registro ejemplo
 
 ```http
 POST /api/auth/register
@@ -124,20 +232,11 @@ Content-Type: application/json
   "email": "pedro.mendoza@email.com",
   "password": "123456",
   "rol": "ESTUDIANTE",
-  "carrera": "Ingeniería de Software",
-  "especialidad": null
+  "carrera": "Ingeniería de Software"
 }
 ```
 
-## Usuarios semilla por defecto
-
-Estos usuarios se cargan con datos semilla para pruebas:
-
-- Ana García - estudiante - `ana.garcia@email.com` - `123456`
-- Luis Pérez - profesor - `luis.perez@email.com` - `123456`
-- Marta Ruiz - estudiante - `marta.ruiz@email.com` - `123456`
-
-## Endpoints principales
+## 11. Endpoints REST
 
 ### Autenticación
 
@@ -150,6 +249,7 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/usuarios/{id}`
 - `POST /api/usuarios`
 - `PUT /api/usuarios/{id}`
+- `PATCH /api/usuarios/{id}`
 - `DELETE /api/usuarios/{id}`
 
 ### Estudiantes
@@ -158,6 +258,7 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/estudiantes/{id}`
 - `POST /api/estudiantes`
 - `PUT /api/estudiantes/{id}`
+- `PATCH /api/estudiantes/{id}`
 - `DELETE /api/estudiantes/{id}`
 
 ### Profesores
@@ -166,6 +267,7 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/profesores/{id}`
 - `POST /api/profesores`
 - `PUT /api/profesores/{id}`
+- `PATCH /api/profesores/{id}`
 - `DELETE /api/profesores/{id}`
 
 ### Empresas
@@ -174,6 +276,7 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/empresas/{id}`
 - `POST /api/empresas`
 - `PUT /api/empresas/{id}`
+- `PATCH /api/empresas/{id}`
 - `DELETE /api/empresas/{id}`
 
 ### Jefes directos
@@ -183,6 +286,7 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/jefes-directos/empresa/{empresaId}`
 - `POST /api/jefes-directos`
 - `PUT /api/jefes-directos/{id}`
+- `PATCH /api/jefes-directos/{id}`
 - `DELETE /api/jefes-directos/{id}`
 
 ### Prácticas
@@ -193,11 +297,57 @@ Estos usuarios se cargan con datos semilla para pruebas:
 - `GET /api/practicas/profesor/{profesorId}`
 - `POST /api/practicas`
 - `PUT /api/practicas/{id}`
+- `PATCH /api/practicas/{id}`
 - `DELETE /api/practicas/{id}`
 
-## Ejemplos de uso
+## 12. Validaciones y reglas de negocio
 
-### Crear una empresa
+La capa de servicios valida los datos antes de guardar:
+
+- campos obligatorios no nulos o vacíos
+- email válido
+- longitud máxima de cadenas
+- coincidencia de jefe directo con la empresa
+- existencia de estudiante/profesor/empresa asociados
+- fechas coherentes (`fechaTermino >= fechaInicio`)
+- unicidad de email para usuarios y empresas
+
+Los errores se manejan con `@RestControllerAdvice`, devolviendo respuestas JSON con código HTTP consistente.
+
+## 13. Colección Bruno
+
+Se incluye la carpeta `bruno/` con requests listos para probar todos los endpoints.
+
+Archivos principales:
+
+- `bruno/bruno.json`
+- `bruno/auth-login.bru`
+- `bruno/auth-register.bru`
+- `bruno/usuarios-crear.bru`
+- `bruno/estudiantes-crear.bru`
+- `bruno/profesores-crear.bru`
+- `bruno/empresas-crear.bru`
+- `bruno/jefes-directos-crear.bru`
+- `bruno/Practicas - Crear-.bru`
+
+Importante para Bruno:
+
+Los requests con `body: json` deben tener este formato exacto:
+
+```bru
+body:json {
+  {
+    "email": "ana.garcia@email.com",
+    "password": "123456"
+  }
+}
+```
+
+Esto es necesario porque Bruno requiere que el JSON de request quede encapsulado en una pareja extra de llaves al crear el body desde el editor.
+
+## 14. Ejemplos de uso HTTP
+
+### Crear empresa autenticado
 
 ```http
 POST /api/empresas
@@ -205,15 +355,15 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "nombre": "ACME Tecnología",
-  "direccion": "Av. Los Copihues 245",
-  "telefono": "+56912345678",
-  "email": "rrhh@acme.cl",
-  "descripcion": "Empresa de desarrollo de software"
+  "nombre": "Open Cloud Ltda",
+  "direccion": "Polígono Industrial Norte 100",
+  "telefono": "+56234567890",
+  "email": "contacto@opencloud.cl",
+  "descripcion": "Empresa de servicios cloud y software"
 }
 ```
 
-### Crear una práctica
+### Crear práctica autenticada
 
 ```http
 POST /api/practicas
@@ -225,88 +375,44 @@ Content-Type: application/json
   "profesorId": 1,
   "empresaId": 1,
   "jefeDirectoId": 1,
-  "fechaInicio": "2025-01-15",
-  "fechaTermino": "2025-03-15",
-  "descripcionActividades": "Desarrollo de APIs y documentación del módulo de usuarios"
+  "fechaInicio": "2026-03-10",
+  "fechaTermino": "2026-05-10",
+  "descripcionActividades": "Desarrollar módulos backend y documentar resultados"
 }
 ```
 
-## Base de datos y scripts SQL
-
-La base de datos puede inicializarse mediante scripts preparados en la carpeta `db/`.
-
-### Crear y recrear la BD
+## 15. Comandos útiles
 
 ```bash
-psql -U postgres -d postgres -f db/init-db.sql
-```
-
-### Cargar únicamente datos semilla
-
-```bash
-psql -U postgres -d ipss_practicas -f db/seed.sql
-```
-
-También la aplicación carga datos iniciales automáticamente con `schema.sql` y `data.sql` al arrancar, si `spring.sql.init.mode=always` está habilitado.
-
-## Datos semilla y pruebas
-
-Los scripts incorporados permiten validar rápidamente la funcionalidad con registros de prueba pre-cargados. Esto reduce la necesidad de crear datos manualmente para cada flujo de validación.
-
-## Colección Bruno
-
-Se incluye una colección de Bruno para probar todos los endpoints desde una herramienta HTTP visual:
-
-- `bruno/bruno.json`
-- `bruno/environments/local.bru`
-- `bruno/*.bru`
-
-Para usarla:
-
-1. Abrir Bruno.
-2. Importar la carpeta `bruno/`.
-3. Confirmar que `baseUrl` apunte a `http://localhost:8080`.
-4. Ejecutar login para obtener el token JWT.
-5. Copiar el token en la variable `token` del entorno.
-6. Asegurarse de que la cabecera `Authorization` esté en una línea separada y no con comas, por ejemplo:
-   `Authorization: Bearer {{token}}`
-
-## Documentación adicional
-
-- `docs/informe-tecnico.md`: diagrama de base de datos y explicación de la solución implementada.
-
-## Estado del proyecto
-
-Actualmente el proyecto cumple con:
-
-- Java 21 + Spring Boot 3.3.4
-- PostgreSQL 15 con Docker
-- JPA para persistencia
-- Patrones en capas
-- CRUD completo
-- Validaciones de backend
-- JWT + autenticación
-- roles por perfil
-- semilla de datos para pruebas
-- documentación técnica y de uso
-
-## Comandos útiles
-
-```bash
-# levantar BD
+# levantar PostgreSQL
 
 docker compose up -d
 
 # compilar proyecto
 mvn clean package
 
-# ejecutar app
+# ejecutar la app en desarrollo
 mvn spring-boot:run
 
-# correr tests
+# ejecutar tests
 mvn test
 ```
 
-## Notas finales
+## 16. Estado del proyecto
 
-El proyecto quedó listo para levantar en entorno local, probar con datos reales de ejemplo y extender con nuevas funcionalidades según los requisitos del negocio.
+El proyecto cumple con:
+
+- Java 21 + Spring Boot 3.3.4
+- PostgreSQL 15 en Docker
+- Spring Data JPA
+- Patrón n capas
+- CRUD completo para entidades principales
+- Validaciones backend con DTOs y `@Valid`
+- Seguridad JWT con roles
+- Datos semilla para pruebas
+- Documentación técnica y de uso
+- Colección Bruno para pruebas de endpoints
+
+## 17. Observaciones finales
+
+La solución está lista para levantarse localmente, probar con datos reales de ejemplo y extenderse según nuevos requerimientos del negocio. La configuración está externalizada por ambiente y el proyecto sigue una estructura clara y mantenible para desarrollos futuros.

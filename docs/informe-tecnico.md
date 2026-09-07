@@ -1,32 +1,97 @@
-# Informe técnico: sistema de gestión de prácticas profesionales
+﻿# Informe técnico: sistema de gestión de prácticas profesionales
 
 ## 1. Objetivo del proyecto
 
-Este proyecto implementa un sistema de gestión para coordinar prácticas profesionales entre estudiantes, profesores, empresas y jefes directos. La solución está construida con Java 21 y Spring Boot 3.3.4, usando PostgreSQL 15 como motor de base de datos y JPA/Hibernate como capa de persistencia.
+Este proyecto implementa una solución backend para gestionar prácticas profesionales entre estudiantes, profesores, empresas y jefes directos. La aplicación está construida con Java 21 y Spring Boot 3.3.4, usa PostgreSQL 15 como base de datos relacional y Spring Data JPA como capa de persistencia.
+
+El objetivo principal es centralizar la gestión del proceso de prácticas: registro de usuarios, asignación de roles, creación de empresas y jefes, y coordinación de la práctica profesional con supervisión académica y empresarial.
 
 ## 2. Requisitos funcionales cubiertos
 
-- Registro y autenticación de usuarios con JWT.
-- Roles y permisos por perfil: estudiante y profesor.
-- CRUD completo de usuarios, estudiantes, profesores, empresas, jefes directos y prácticas.
-- Validaciones de datos en backend con `@Valid`.
-- Manejo centralizado de errores con `@RestControllerAdvice`.
-- Datos semilla para pruebas funcionales.
-- Scripts SQL para recrear y cargar el modelo de datos.
+- Registro y autenticación de usuarios
+- JWT para acceso seguro a la API
+- Perfiles de estudiante y profesor
+- CRUD completo para usuarios, estudiantes, profesores, empresas, jefes directos y prácticas
+- Validaciones de entrada con `@Valid`
+- Manejo centralizado de errores con `@RestControllerAdvice`
+- Scripts SQL para recrear la BD y cargar datos semilla
+- Colección Bruno para pruebas de endpoints
+- Parametrización por entorno y variables de configuración
 
 ## 3. Arquitectura implementada
 
 El proyecto sigue un patrón de n capas:
 
-- `entity`: entidades JPA.
-- `repository`: acceso a datos con Spring Data JPA.
-- `service`: lógica y validaciones de negocio.
-- `controller`: endpoints REST.
-- `dto`: objetos de entrada/salida.
-- `security`: autenticación JWT y autorización.
-- `exception`: manejo de errores.
+- `entity`: entidades JPA
+- `repository`: persistencia con Spring Data JPA
+- `service`: lógica y validaciones de negocio
+- `controller`: endpoints REST
+- `dto`: DTOs de entrada y salida
+- `security`: autenticación JWT y configuración de seguridad
+- `exception`: errores y respuestas estándar
 
-## 4. Diagrama de base de datos
+Este diseño separa responsabilidades y facilita mantenimiento, prueba unitaria y extensión del sistema.
+
+## 4. Modelo de datos
+
+### 4.1 Entidades principales
+
+#### Usuario
+
+- `id`
+- `nombre`
+- `apellido`
+- `email`
+- `password`
+- `rol`
+
+#### Estudiante
+
+- `id`
+- `usuario_id`
+- `carrera`
+- `telefono`
+- `direccion`
+
+#### Profesor
+
+- `id`
+- `usuario_id`
+- `especialidad`
+- `cargo`
+
+#### Empresa
+
+- `id`
+- `nombre`
+- `direccion`
+- `telefono`
+- `email`
+- `descripcion`
+
+#### JefeDirecto
+
+- `id`
+- `nombre`
+- `apellido`
+- `cargo`
+- `telefono`
+- `email`
+- `empresa_id`
+
+#### Practica
+
+- `id`
+- `fecha_inicio`
+- `fecha_termino`
+- `descripcion_actividades`
+- `estado`
+- `estudiante_id`
+- `profesor_id`
+- `empresa_id`
+- `jefe_directo_id`
+
+## 5. Diagrama de base de datos
 
 ```mermaid
 erDiagram
@@ -94,92 +159,132 @@ erDiagram
     }
 ```
 
-## 5. Descripción de las entidades y relaciones
+## 6. Relación entre entidades
 
-### Usuarios
-- Tabla central con credenciales y rol.
-- Un usuario puede ser estudiante o profesor.
-- Se valida que el email sea único.
+### Usuario y perfil
 
-### Estudiantes
-- Relación uno a uno con `Usuario`.
-- Poseen carrera, teléfono y dirección.
+El usuario es la entidad base de autenticación. A partir de este registro se crea, según el rol, un perfil de estudiante o profesor. La relación se modela como 1:1. Esto permite centralizar credenciales y roles sin duplicar la identidad de la persona.
 
-### Profesores
-- Relación uno a uno con `Usuario`.
-- Poseen especialidad y cargo.
+### Empresa y jefe directo
 
-### Empresas
-- Representan organizaciones donde se desarrollan las prácticas.
-- Pueden tener varios jefes directos y varias prácticas.
+La empresa puede tener varios jefes directos. El jefe directo pertenece a una empresa y es la referencia profesional que valida o supervisa la práctica.
 
-### Jefes directos
-- Pertenecen a una empresa.
-- Supervisan o validan la práctica del estudiante.
+### Estudiante, profesor y práctica
 
-### Prácticas
-- Relación con estudiante, profesor, empresa y jefe directo.
-- Incluye fechas, descripción, estado y validaciones por negocio.
+Una práctica se realiza entre:
 
-## 6. Soluciones implementadas
+- un estudiante
+- un profesor supervisor
+- una empresa
+- un jefe directo asociada a esa empresa
 
-### 6.1 Seguridad y autenticación
+Esto garantiza que cada práctica quede vinculada al contexto real del proceso formativo.
 
-Se aplicó Spring Security con JWT para proteger endpoints y controlar acceso por perfil.
+## 7. Seguridad y autenticación
 
-- `AuthController` expone `/api/auth/login` y `/api/auth/register`.
-- `JwtService` genera y valida tokens.
-- `JwtAuthenticationFilter` interpreta el header `Authorization: Bearer ...`.
-- `SecurityConfig` define reglas por rol y ruta.
-- El hash de contraseñas se realiza con `BCryptPasswordEncoder`.
+La aplicación usa `Spring Security` con JWT para proteger rutas internas.
 
-### 6.2 Validaciones de negocio
+### Flujo
 
-La capa de servicios valida:
+1. El cliente envía `POST /api/auth/login` con email y password.
+2. La app valida credenciales usando `AuthenticationManager`.
+3. Si son correctas, genera un token JWT con email, rol y data del usuario.
+4. El cliente envía el token en el header `Authorization: Bearer <token>`.
+5. El `JwtAuthenticationFilter` valida la firma y establece el contexto de seguridad del usuario.
 
-- datos obligatorios,
-- email válido,
-- fechas coherentes,
-- relación del jefe directo con la empresa,
-- existencia de registros relacionados,
-- empresa, profesor, estudiante y jefe directo en las prácticas.
+### Roles por acceso
 
-Los errores se gestionan mediante `ApiExceptionHandler` para responder con JSON estructurado y código HTTP adecuado.
+- `ROLE_ESTUDIANTE`: acceso limitado a lectura y perfil propio
+- `ROLE_PROFESOR`: acceso administrativo sobre entidades principales del sistema
 
-### 6.3 Persistencia y base de datos
+### Encriptación de contraseñas
 
-Se usa Spring Data JPA para persistir entidades PostgreSQL con relaciones de entidad. Los scripts SQL en `src/main/resources/schema.sql` y `db/init-db.sql` permiten:
+Las contraseñas se almacenan con `BCryptPasswordEncoder`, evitando guardar texto plano en la BD.
 
-- crear el esquema,
-- recrearlo desde cero,
-- cargar datos semilla para pruebas,
-- validar el flujo sin intervención manual compleja.
+## 8. Validaciones de negocio
 
-### 6.4 Datos semilla
+La capa de servicios valida los siguientes aspectos:
 
-Se cargan usuarios de prueba con credenciales demo:
+- email único por usuario
+- email válido y no vacío
+- nombre y apellido obligatorios
+- carrera obligatoria para estudiantes
+- especialidad obligatoria para profesores
+- empresa, profesor, estudiante y jefe directo obligatorios al crear una práctica
+- fechas de inicio y término coherentes
+- jefe directo asociado a la empresa indicada
+- no duplicar registros de perfil por usuario
 
-- Ana García: estudiante, `ana.garcia@email.com`, password `123456`
-- Luis Pérez: profesor, `luis.perez@email.com`, password `123456`
-- Marta Ruiz: estudiante, `marta.ruiz@email.com`, password `123456`
+Estas validaciones se aplican en servicios y se resuelven con errores propios del dominio (`BusinessException`, `ResourceNotFoundException`).
 
-## 7. Pruebas y verificación
+## 9. Scripts SQL y datos semilla
 
-Se validó:
+Se entregan dos scripts principales en `db/`:
 
-- levantamiento del proyecto con Java 21,
-- conexión a PostgreSQL usando Docker,
-- login con JWT,
-- acceso a rutas protegidas con token válido,
-- CRUD de entidades principales,
-- compilación con Maven y ejecución de tests de contexto.
+- `db/init-db.sql`: elimina tablas, recrea el esquema y carga datos de ejemplo
+- `db/seed.sql`: inserta datos semilla sin recrear estructura
 
-## 8. Documentación adicional
+Los datos semilla incluyen usuarios con credenciales de ejemplo:
 
-- README general del proyecto: documentación de setup y uso.
-- Colección Bruno: pruebas automáticas para todos los endpoints.
-- Scripts SQL en `db/` para recreación y seed.
+- Ana García: `ana.garcia@email.com` / `123456`
+- Luis Pérez: `luis.perez@email.com` / `123456`
+- Marta Ruiz: `marta.ruiz@email.com` / `123456`
 
-## 9. Conclusión
+## 10. Configuración por ambiente
 
-La solución entrega una base sólida para la gestión de prácticas profesionales con una arquitectura mantenible, seguridad real y un modelo de datos funcional y escalable.
+La app usa perfiles y variables de entorno para evitar hardcodear valores locales. Las propiedades relevantes se leen desde:
+
+- `application.properties`
+- `application-dev.properties`
+- `application-prod.properties`
+
+Ejemplos de configuración:
+
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `SERVER_PORT`
+- `SPRING_PROFILES_ACTIVE`
+- `JPA_DDL_AUTO`
+- `JPA_SHOW_SQL`
+- `JWT_SECRET`
+
+Esto permite mover la aplicación entre entorno local, pruebas y producción con cambios mínimos.
+
+## 11. Colección Bruno
+
+Se incluye la carpeta `bruno/` con requests HTTP para pruebas manuales y automatizadas de endpoints.
+
+La colección ayuda a validar:
+
+- login y registro
+- creación y consulta de usuarios
+- operaciones CRUD de empresas, prácticas y perfiles
+- autorización por JWT
+
+Nota importante: Bruno requiere que el body de request con `body: json` esté encapsulado en una pareja extra de llaves, por ejemplo:
+
+```bru
+body:json {
+  {
+    "email": "ana.garcia@email.com",
+    "password": "123456"
+  }
+}
+```
+
+## 12. Pruebas y verificación
+
+Se validó que el proyecto:
+
+- compila con Java 21
+- arranca con Spring Boot 3.3.4
+- se conecta correctamente a PostgreSQL 15 en Docker
+- autentica con JWT
+- protege rutas según permisos de rol
+- permite CRUD sobre entidades principales
+- maneja errores de validación y negocio con mensajes claros
+
+## 13. Conclusión
+
+La solución implementada entrega una base sólida para la gestión de prácticas profesionales, con una estructura ordenada, seguridad adecuada, persistencia real con PostgreSQL, validaciones de negocio y documentación de uso. Es una base adecuada para continuar con nuevas funcionalidades, métricas o reportes del sistema.
