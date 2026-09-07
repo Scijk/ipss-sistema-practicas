@@ -2,13 +2,15 @@ package com.ipss.practicas.controller;
 
 import com.ipss.practicas.dto.ActualizarJefeDirectoRequest;
 import com.ipss.practicas.dto.CrearJefeDirectoRequest;
-import com.ipss.practicas.entity.JefeDirecto;
+import com.ipss.practicas.dto.EntityMapper;
+import com.ipss.practicas.dto.JefeDirectoResponse;
 import com.ipss.practicas.service.JefeDirectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.util.List;
 
@@ -20,29 +22,40 @@ public class JefeDirectoController {
     private final JefeDirectoService jefeDirectoService;
 
     @GetMapping
-    public List<JefeDirecto> listarTodos() {
-        return jefeDirectoService.listarTodos();
+    public List<JefeDirectoResponse> listarTodos() {
+        return jefeDirectoService.listarTodos().stream()
+                .map(EntityMapper::toJefeDirectoResponse)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public JefeDirecto obtenerPorId(@PathVariable Long id) {
-        return jefeDirectoService.obtenerPorId(id);
+    public JefeDirectoResponse obtenerPorId(@PathVariable Long id) {
+        return EntityMapper.toJefeDirectoResponse(jefeDirectoService.obtenerPorId(id));
     }
 
     @GetMapping("/empresa/{empresaId}")
-    public List<JefeDirecto> listarPorEmpresa(@PathVariable Long empresaId) {
-        return jefeDirectoService.listarPorEmpresa(empresaId);
+    public List<JefeDirectoResponse> listarPorEmpresa(@PathVariable Long empresaId) {
+        return jefeDirectoService.listarPorEmpresa(empresaId).stream()
+                .map(EntityMapper::toJefeDirectoResponse)
+                .toList();
     }
 
     @PostMapping
-    public ResponseEntity<JefeDirecto> crear(@Valid @RequestBody CrearJefeDirectoRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(jefeDirectoService.crear(request));
+    public ResponseEntity<JefeDirectoResponse> crear(@Valid @RequestBody CrearJefeDirectoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(EntityMapper.toJefeDirectoResponse(jefeDirectoService.crear(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<JefeDirecto> actualizar(@PathVariable Long id,
-                                               @Valid @RequestBody ActualizarJefeDirectoRequest request) {
-        return ResponseEntity.ok(jefeDirectoService.actualizar(id, request));
+    public ResponseEntity<JefeDirectoResponse> actualizar(@PathVariable Long id,
+                                                      @Valid @RequestBody ActualizarJefeDirectoRequest request) {
+        return ResponseEntity.ok(EntityMapper.toJefeDirectoResponse(jefeDirectoService.actualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<JefeDirectoResponse> actualizarParcial(@PathVariable Long id,
+                                                            @Valid @RequestBody ActualizarJefeDirectoRequest request) {
+        return ResponseEntity.ok(EntityMapper.toJefeDirectoResponse(jefeDirectoService.actualizar(id, request)));
     }
 
     @DeleteMapping("/{id}")

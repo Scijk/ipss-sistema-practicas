@@ -1,5 +1,6 @@
 package com.ipss.practicas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,10 +60,12 @@ public class JefeDirecto {
     @Column(length = 150)
     private String email;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "jefeDirecto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Practica> practicas = new ArrayList<>();
 }

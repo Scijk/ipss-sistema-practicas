@@ -1,6 +1,6 @@
 meta {
   name: "Usuarios - Crear"
-  type: "http"
+  type: http
   seq: 12
 }
 
@@ -11,14 +11,23 @@ post {
 }
 
 headers {
-  Authorization: Bearer {{token}}
   Content-Type: application/json
+  Authorization: {{token}}
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiRVNUVURJQU5URSIsInVzZXJJZCI6MSwic3ViIjoiYW5hLmdhcmNpYUBlbWFpbC5jb20iLCJpYXQiOjE3ODg3NDQ3NjQsImV4cCI6MTc4ODgzMTE2NH0.ctXrcYaai8S4KDSMGoKwwz97hyTcWSMSKAD3pVW5ZYk
 }
 
 body:json {
+  {
+
   "nombre": "Camila",
-  "apellido": "Vega",
-  "email": "camila.vega@email.com",
-  "password": "123456",
-  "rol": "PROFESOR"
+    "apellido": "Vega",
+    "email": "camila.vega@email.com",
+    "password": "123456",
+    "rol": "PROFESOR"
+
+  }
 }
+

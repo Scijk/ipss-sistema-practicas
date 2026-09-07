@@ -1,6 +1,6 @@
 meta {
   name: "Estudiantes - Crear"
-  type: "http"
+  type: http
   seq: 22
 }
 
@@ -15,9 +15,18 @@ headers {
   Content-Type: application/json
 }
 
-body:json {
-  "usuarioId": 2,
-  "carrera": "Ingenier?a Civil",
-  "telefono": "+56944445555",
-  "direccion": "Calle 10 #345"
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiRVNUVURJQU5URSIsInVzZXJJZCI6MSwic3ViIjoiYW5hLmdhcmNpYUBlbWFpbC5jb20iLCJpYXQiOjE3ODg3NDQ3NjQsImV4cCI6MTc4ODgzMTE2NH0.ctXrcYaai8S4KDSMGoKwwz97hyTcWSMSKAD3pVW5ZYk
 }
+
+body:json {
+  {
+
+  "usuarioId": 4,
+    "carrera": "Ingenieria Civil",
+    "telefono": "+56944445555",
+    "direccion": "Calle 10 #345"
+
+  }
+}
+

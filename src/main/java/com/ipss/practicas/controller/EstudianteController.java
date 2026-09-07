@@ -2,13 +2,15 @@ package com.ipss.practicas.controller;
 
 import com.ipss.practicas.dto.ActualizarEstudianteRequest;
 import com.ipss.practicas.dto.CrearEstudianteRequest;
-import com.ipss.practicas.entity.Estudiante;
+import com.ipss.practicas.dto.EntityMapper;
+import com.ipss.practicas.dto.EstudianteResponse;
 import com.ipss.practicas.service.EstudianteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.util.List;
 
@@ -20,24 +22,33 @@ public class EstudianteController {
     private final EstudianteService estudianteService;
 
     @GetMapping
-    public List<Estudiante> listarTodos() {
-        return estudianteService.listarTodos();
+    public List<EstudianteResponse> listarTodos() {
+        return estudianteService.listarTodos().stream()
+                .map(EntityMapper::toEstudianteResponse)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Estudiante obtenerPorId(@PathVariable Long id) {
-        return estudianteService.obtenerPorId(id);
+    public EstudianteResponse obtenerPorId(@PathVariable Long id) {
+        return EntityMapper.toEstudianteResponse(estudianteService.obtenerPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Estudiante> crear(@Valid @RequestBody CrearEstudianteRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(estudianteService.crear(request));
+    public ResponseEntity<EstudianteResponse> crear(@Valid @RequestBody CrearEstudianteRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(EntityMapper.toEstudianteResponse(estudianteService.crear(request)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Estudiante> actualizar(@PathVariable Long id,
-                                               @Valid @RequestBody ActualizarEstudianteRequest request) {
-        return ResponseEntity.ok(estudianteService.actualizar(id, request));
+    public ResponseEntity<EstudianteResponse> actualizar(@PathVariable Long id,
+                                                     @Valid @RequestBody ActualizarEstudianteRequest request) {
+        return ResponseEntity.ok(EntityMapper.toEstudianteResponse(estudianteService.actualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EstudianteResponse> actualizarParcial(@PathVariable Long id,
+                                                           @Valid @RequestBody ActualizarEstudianteRequest request) {
+        return ResponseEntity.ok(EntityMapper.toEstudianteResponse(estudianteService.actualizar(id, request)));
     }
 
     @DeleteMapping("/{id}")

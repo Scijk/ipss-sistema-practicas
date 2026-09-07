@@ -7,6 +7,7 @@ import com.ipss.practicas.exception.BusinessException;
 import com.ipss.practicas.exception.ResourceNotFoundException;
 import com.ipss.practicas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<Usuario> listarTodos() {
@@ -41,7 +43,7 @@ public class UsuarioService {
                 .nombre(request.nombre().trim())
                 .apellido(request.apellido().trim())
                 .email(request.email().trim())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password()))
                 .rol(request.rol())
                 .build();
 
@@ -66,7 +68,7 @@ public class UsuarioService {
             usuario.setEmail(email);
         }
         if (request.password() != null && !request.password().isBlank()) {
-            usuario.setPassword(request.password());
+            usuario.setPassword(passwordEncoder.encode(request.password()));
         }
         if (request.rol() != null) {
             usuario.setRol(request.rol());

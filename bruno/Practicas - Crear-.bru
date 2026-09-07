@@ -15,12 +15,21 @@ headers {
   Content-Type: application/json
 }
 
-body:json {
-  "estudianteId": 1,
-  "profesorId": 1,
-  "empresaId": 1,
-  "jefeDirectoId": 1,
-  "fechaInicio": "2025-01-15",
-  "fechaTermino": "2025-03-15",
-  "descripcionActividades": "Desarrollo de APIs y documentaci?n t?cnica del m?dulo de usuarios"
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiRVNUVURJQU5URSIsInVzZXJJZCI6MSwic3ViIjoiYW5hLmdhcmNpYUBlbWFpbC5jb20iLCJpYXQiOjE3ODg3NDQ3NjQsImV4cCI6MTc4ODgzMTE2NH0.ctXrcYaai8S4KDSMGoKwwz97hyTcWSMSKAD3pVW5ZYk
 }
+
+body:json {
+  {
+
+  "estudianteId": 2,
+    "profesorId": 1,
+    "empresaId": 1,
+    "jefeDirectoId": 1,
+    "fechaInicio": "2024-01-15",
+    "fechaTermino": "2027-03-15",
+    "descripcionActividades": "Practica prueba"
+
+  }
+}
+

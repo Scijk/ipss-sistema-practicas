@@ -1,5 +1,6 @@
 package com.ipss.practicas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,9 +58,11 @@ public class Empresa {
     @Column(length = 200)
     private String descripcion;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JefeDirecto> jefesDirectos = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Practica> practicas = new ArrayList<>();
 }

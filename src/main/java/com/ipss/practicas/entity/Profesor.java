@@ -1,5 +1,6 @@
 package com.ipss.practicas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +36,7 @@ public class Profesor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
@@ -48,6 +50,7 @@ public class Profesor {
     @Column(length = 80)
     private String cargo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "profesorSupervisor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Practica> practicasAsignadas = new ArrayList<>();
 }

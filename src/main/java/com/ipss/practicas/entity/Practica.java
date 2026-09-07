@@ -1,5 +1,6 @@
 package com.ipss.practicas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ipss.practicas.enums.EstadoPractica;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,18 +52,22 @@ public class Practica {
     @Column(nullable = false, length = 20)
     private EstadoPractica estado = EstadoPractica.PENDIENTE;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estudiante_id", nullable = false)
     private Estudiante estudiante;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profesor_id", nullable = false)
     private Profesor profesorSupervisor;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jefe_directo_id", nullable = false)
     private JefeDirecto jefeDirecto;

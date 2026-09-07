@@ -1,5 +1,6 @@
 package com.ipss.practicas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ipss.practicas.enums.RolUsuario;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -51,6 +52,7 @@ public class Usuario {
     private String email;
 
     @NotBlank
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -58,9 +60,11 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private RolUsuario rol;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Estudiante estudiante;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Profesor profesor;
 }

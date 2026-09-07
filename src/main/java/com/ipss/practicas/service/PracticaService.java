@@ -1,5 +1,6 @@
 package com.ipss.practicas.service;
 
+import com.ipss.practicas.dto.ActualizarPracticaRequest;
 import com.ipss.practicas.dto.CrearPracticaRequest;
 import com.ipss.practicas.entity.Empresa;
 import com.ipss.practicas.entity.Estudiante;
@@ -87,26 +88,61 @@ public class PracticaService {
     }
 
     @Transactional
-    public Practica actualizarPractica(Long id, CrearPracticaRequest request) {
-        Practica practica = obtenerPorId(id);
-        validarDatos(request);
+    public Practica actualizarPractica(Long id, ActualizarPracticaRequest request) {
+        if (request == null) {
+            throw new BusinessException("La solicitud es obligatoria");
+        }
 
-        Estudiante estudiante = estudianteRepository.findById(request.estudianteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado con id: " + request.estudianteId()));
-        Profesor profesor = profesorRepository.findById(request.profesorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Profesor no encontrado con id: " + request.profesorId()));
-        Empresa empresa = empresaRepository.findById(request.empresaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada con id: " + request.empresaId()));
-        JefeDirecto jefeDirecto = jefeDirectoRepository.findById(request.jefeDirectoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Jefe directo no encontrado con id: " + request.jefeDirectoId()));
+        Practica practica = obtenerPorId(id);
+
+        Long estudianteId = request.estudianteId() != null ? request.estudianteId() : practica.getEstudiante() != null ? practica.getEstudiante().getId() : null;
+        Long profesorId = request.profesorId() != null ? request.profesorId() : practica.getProfesorSupervisor() != null ? practica.getProfesorSupervisor().getId() : null;
+        Long empresaId = request.empresaId() != null ? request.empresaId() : practica.getEmpresa() != null ? practica.getEmpresa().getId() : null;
+        Long jefeDirectoId = request.jefeDirectoId() != null ? request.jefeDirectoId() : practica.getJefeDirecto() != null ? practica.getJefeDirecto().getId() : null;
+
+        if (estudianteId == null) {
+            throw new BusinessException("El estudiante es obligatorio");
+        }
+        if (profesorId == null) {
+            throw new BusinessException("El profesor es obligatorio");
+        }
+        if (empresaId == null) {
+            throw new BusinessException("La empresa es obligatoria");
+        }
+        if (jefeDirectoId == null) {
+            throw new BusinessException("El jefe directo es obligatorio");
+        }
+
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado con id: " + estudianteId));
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profesor no encontrado con id: " + profesorId));
+        Empresa empresa = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada con id: " + empresaId));
+        JefeDirecto jefeDirecto = jefeDirectoRepository.findById(jefeDirectoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Jefe directo no encontrado con id: " + jefeDirectoId));
 
         if (!jefeDirecto.getEmpresa().getId().equals(empresa.getId())) {
             throw new BusinessException("El jefe directo no pertenece a la empresa indicada");
         }
 
-        practica.setFechaInicio(request.fechaInicio());
-        practica.setFechaTermino(request.fechaTermino());
-        practica.setDescripcionActividades(request.descripcionActividades().trim());
+        java.time.LocalDate fechaInicio = request.fechaInicio() != null ? request.fechaInicio() : practica.getFechaInicio();
+        java.time.LocalDate fechaTermino = request.fechaTermino() != null ? request.fechaTermino() : practica.getFechaTermino();
+
+        if (fechaInicio == null || fechaTermino == null) {
+            throw new BusinessException("Las fechas de inicio y término son obligatorias");
+        }
+        if (fechaTermino.isBefore(fechaInicio)) {
+            throw new BusinessException("La fecha de término no puede ser menor que la de inicio");
+        }
+
+        if (request.descripcionActividades() != null && request.descripcionActividades().isBlank()) {
+            throw new BusinessException("La descripción de actividades es obligatoria");
+        }
+
+        practica.setFechaInicio(fechaInicio);
+        practica.setFechaTermino(fechaTermino);
+        practica.setDescripcionActividades(request.descripcionActividades() == null ? practica.getDescripcionActividades() : request.descripcionActividades().trim());
         practica.setEstudiante(estudiante);
         practica.setProfesorSupervisor(profesor);
         practica.setEmpresa(empresa);

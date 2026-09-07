@@ -2,13 +2,15 @@ package com.ipss.practicas.controller;
 
 import com.ipss.practicas.dto.ActualizarUsuarioRequest;
 import com.ipss.practicas.dto.CrearUsuarioRequest;
-import com.ipss.practicas.entity.Usuario;
+import com.ipss.practicas.dto.EntityMapper;
+import com.ipss.practicas.dto.UsuarioResponse;
 import com.ipss.practicas.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.util.List;
 
@@ -20,24 +22,33 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @GetMapping
-    public List<Usuario> listarTodos() {
-        return usuarioService.listarTodos();
+    public List<UsuarioResponse> listarTodos() {
+        return usuarioService.listarTodos().stream()
+                .map(EntityMapper::toUsuarioResponse)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Usuario obtenerPorId(@PathVariable Long id) {
-        return usuarioService.obtenerPorId(id);
+    public UsuarioResponse obtenerPorId(@PathVariable Long id) {
+        return EntityMapper.toUsuarioResponse(usuarioService.obtenerPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> crear(@Valid @RequestBody CrearUsuarioRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crear(request));
+    public ResponseEntity<UsuarioResponse> crear(@Valid @RequestBody CrearUsuarioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(EntityMapper.toUsuarioResponse(usuarioService.crear(request))); 
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id,
-                                            @Valid @RequestBody ActualizarUsuarioRequest request) {
-        return ResponseEntity.ok(usuarioService.actualizar(id, request));
+    public ResponseEntity<UsuarioResponse> actualizar(@PathVariable Long id,
+                                                   @Valid @RequestBody ActualizarUsuarioRequest request) {
+        return ResponseEntity.ok(EntityMapper.toUsuarioResponse(usuarioService.actualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> actualizarParcial(@PathVariable Long id,
+                                                         @Valid @RequestBody ActualizarUsuarioRequest request) {
+        return ResponseEntity.ok(EntityMapper.toUsuarioResponse(usuarioService.actualizar(id, request)));
     }
 
     @DeleteMapping("/{id}")
