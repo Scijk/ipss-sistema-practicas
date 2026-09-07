@@ -1,0 +1,15 @@
+meta {
+  name: "Practicas - Eliminar"
+  type: http
+  seq: 66
+}
+
+delete {
+  url: {{baseUrl}}/api/practicas/999
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

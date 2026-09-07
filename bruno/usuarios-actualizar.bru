@@ -1,0 +1,23 @@
+meta {
+  name: "Usuarios - Actualizar"
+  type: "http"
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/usuarios/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "nombre": "Ana",
+  "apellido": "Garc?a",
+  "email": "ana.garcia@email.com",
+  "rol": "ESTUDIANTE"
+}

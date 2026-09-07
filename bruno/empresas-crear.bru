@@ -1,0 +1,24 @@
+meta {
+  name: "Empresas - Crear"
+  type: "http"
+  seq: 42
+}
+
+post {
+  url: {{baseUrl}}/api/empresas
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "nombre": "Open Cloud Ltda",
+  "direccion": "Poligono Industrial Norte 100",
+  "telefono": "+56234567890",
+  "email": "contacto@opencloud.cl",
+  "descripcion": "Empresa de servicios cloud y software"
+}

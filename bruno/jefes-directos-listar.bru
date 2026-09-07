@@ -1,0 +1,15 @@
+meta {
+  name: "Jefes Directos - Listar"
+  type: "http"
+  seq: 50
+}
+
+get {
+  url: {{baseUrl}}/api/jefes-directos
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

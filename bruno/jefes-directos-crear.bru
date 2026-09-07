@@ -1,0 +1,25 @@
+meta {
+  name: "Jefes Directos - Crear"
+  type: "http"
+  seq: 53
+}
+
+post {
+  url: {{baseUrl}}/api/jefes-directos
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "nombre": "Rodrigo",
+  "apellido": "Soto",
+  "cargo": "Gerente de Proyectos",
+  "telefono": "+56977889900",
+  "email": "rodrigo.soto@opencloud.cl",
+  "empresaId": 1
+}

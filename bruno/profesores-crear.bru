@@ -1,0 +1,22 @@
+meta {
+  name: "Profesores - Crear"
+  type: "http"
+  seq: 32
+}
+
+post {
+  url: {{baseUrl}}/api/profesores
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "usuarioId": 2,
+  "especialidad": "Base de Datos",
+  "cargo": "Jefe de Laboratorio"
+}

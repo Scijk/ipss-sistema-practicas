@@ -1,0 +1,15 @@
+meta {
+  name: "Estudiantes - Eliminar"
+  type: "http"
+  seq: 24
+}
+
+delete {
+  url: {{baseUrl}}/api/estudiantes/999
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

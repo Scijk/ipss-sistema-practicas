@@ -1,0 +1,23 @@
+meta {
+  name: "Practicas - Actualizar"
+  type: http
+  seq: 65
+}
+
+put {
+  url: {{baseUrl}}/api/practicas/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "fechaInicio": "2025-01-15",
+  "fechaTermino": "2025-04-15",
+  "descripcionActividades": "Desarrollo de microservicios y mejoras en documentaci?n t?cnica",
+  "estado": "EN_CURSO"
+}

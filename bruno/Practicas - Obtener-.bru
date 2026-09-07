@@ -1,0 +1,15 @@
+meta {
+  name: "Practicas - Obtener"
+  type: http
+  seq: 61
+}
+
+get {
+  url: {{baseUrl}}/api/practicas/1
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

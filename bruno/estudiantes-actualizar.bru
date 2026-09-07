@@ -1,0 +1,22 @@
+meta {
+  name: "Estudiantes - Actualizar"
+  type: "http"
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/api/estudiantes/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "carrera": "Ingenier?a de Software",
+  "telefono": "+56911112222",
+  "direccion": "Av. Siempre Viva 123"
+}

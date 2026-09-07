@@ -1,0 +1,15 @@
+meta {
+  name: "Empresas - Obtener"
+  type: "http"
+  seq: 41
+}
+
+get {
+  url: {{baseUrl}}/api/empresas/1
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

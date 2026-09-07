@@ -1,0 +1,15 @@
+meta {
+  name: "Estudiantes - Listar"
+  type: "http"
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/api/estudiantes
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

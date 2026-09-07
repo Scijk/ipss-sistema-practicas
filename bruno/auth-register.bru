@@ -1,0 +1,24 @@
+meta {
+  name: "Auth - Register"
+  type: "http"
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  "nombre": "Pedro",
+  "apellido": "Mendoza",
+  "email": "pedro.mendoza@email.com",
+  "password": "123456",
+  "rol": "ESTUDIANTE",
+  "carrera": "Ingenier?a de Software"
+}

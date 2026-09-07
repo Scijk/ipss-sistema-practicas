@@ -1,0 +1,15 @@
+meta {
+  name: "Jefes Directos - Eliminar"
+  type: "http"
+  seq: 55
+}
+
+delete {
+  url: {{baseUrl}}/api/jefes-directos/999
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

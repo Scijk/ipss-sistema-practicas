@@ -1,0 +1,24 @@
+meta {
+  name: "Empresas - Actualizar"
+  type: "http"
+  seq: 43
+}
+
+put {
+  url: {{baseUrl}}/api/empresas/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "nombre": "Open Cloud Chile",
+  "direccion": "Av. Industrial 200",
+  "telefono": "+56223334455",
+  "email": "info@opencloud.cl",
+  "descripcion": "Empresa regional de soluciones cloud"
+}

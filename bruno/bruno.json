@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "name": "IPSS Sistema de Prácticas",
+  "type": "collection",
+  "ignore": [
+    ".git",
+    "node_modules",
+    "dist"
+  ]
+}

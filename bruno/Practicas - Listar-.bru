@@ -1,0 +1,15 @@
+meta {
+  name: "Practicas - Listar"
+  type: http
+  seq: 60
+}
+
+get {
+  url: {{baseUrl}}/api/practicas
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

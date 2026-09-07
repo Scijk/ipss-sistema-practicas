@@ -10,6 +10,11 @@
 .vscode/
 *.iml
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Local runtime and temporary files
 out.txt
 out/

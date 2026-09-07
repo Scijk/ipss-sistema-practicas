@@ -1,0 +1,26 @@
+meta {
+  name: "Practicas - Crear"
+  type: http
+  seq: 64
+}
+
+post {
+  url: {{baseUrl}}/api/practicas
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "estudianteId": 1,
+  "profesorId": 1,
+  "empresaId": 1,
+  "jefeDirectoId": 1,
+  "fechaInicio": "2025-01-15",
+  "fechaTermino": "2025-03-15",
+  "descripcionActividades": "Desarrollo de APIs y documentaci?n t?cnica del m?dulo de usuarios"
+}

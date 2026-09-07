@@ -1,0 +1,23 @@
+meta {
+  name: "Estudiantes - Crear"
+  type: "http"
+  seq: 22
+}
+
+post {
+  url: {{baseUrl}}/api/estudiantes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "usuarioId": 2,
+  "carrera": "Ingenier?a Civil",
+  "telefono": "+56944445555",
+  "direccion": "Calle 10 #345"
+}

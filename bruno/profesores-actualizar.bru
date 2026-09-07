@@ -1,0 +1,21 @@
+meta {
+  name: "Profesores - Actualizar"
+  type: "http"
+  seq: 33
+}
+
+put {
+  url: {{baseUrl}}/api/profesores/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+}
+
+body:json {
+  "especialidad": "Arquitectura de Software",
+  "cargo": "Profesor Titular"
+}

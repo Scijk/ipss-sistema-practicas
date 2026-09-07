@@ -1,225 +1,148 @@
-# IPSS Sistema de Prácticas
+﻿# IPSS Sistema de Prácticas
 
-Proyecto Spring Boot 3.3.4 para la gestión de prácticas profesionales, desarrollado con Java 21 y PostgreSQL 15. La aplicación permite registrar, consultar, actualizar y eliminar información relacionada con estudiantes, profesores, empresas, jefes directos y prácticas profesionales.
+Sistema backend para gestionar prácticas profesionales con Java 21, Spring Boot, PostgreSQL 15 y JPA. La aplicación sigue una arquitectura en capas y cuenta con autenticación JWT, gestión de usuarios por roles y CRUD para las entidades principales del dominio.
 
-## Descripción del proyecto
+## Descripción general
 
-El sistema resuelve la necesidad del colegio técnico profesional de gestionar las prácticas profesionales de sus estudiantes egresados de enseñanza media. La solución incorpora distintos niveles de acceso y validaciones para asegurar que el flujo de información sea seguro, ordenado y consistente.
+El proyecto cubre los procesos necesarios para administrar estudiantes, profesores, empresas, jefes directos y las prácticas profesionales asociadas. Cada entidad se maneja a través de servicios y controladores REST, con validaciones, manejo de excepciones y persistencia en PostgreSQL.
 
-### Roles y permisos
-
-- Estudiantes: pueden registrar y consultar sus prácticas.
-- Profesores: pueden supervisar y gestionar registros de prácticas.
-- Administrador o backend: gestión completa de usuarios, empresas y otras entidades asociadas.
-
-### Arquitectura implementada
-
-La solución sigue un patrón de capas:
-
-- `entity`: entidades JPA del modelo de datos
-- `repository`: acceso a base de datos con Spring Data JPA
-- `service`: lógica de negocio y validaciones
-- `controller`: endpoints REST
-- `dto`: transferencias de datos
-- `exception`: manejadores de errores personalizados
-- `enums`: enumeraciones del dominio
-
-## Modelo de base de datos
-
-El esquema incluye las siguientes entidades principales:
-
-- `usuarios`
-- `estudiantes`
-- `profesores`
-- `empresas`
-- `jefes_directos`
-- `practicas`
-
-### Relaciones principales
-
-- Cada `Usuario` tiene un rol: `ESTUDIANTE` o `PROFESOR`.
-- Cada `Estudiante` está asociado a un `Usuario`.
-- Cada `Profesor` está asociado a un `Usuario`.
-- Cada `Empresa` puede tener varios `JefeDirecto` y varias `Practica`.
-- Cada `JefeDirecto` pertenece a una `Empresa`.
-- Cada `Practica` está asociada a:
-  - un `Estudiante`
-  - un `Profesor`
-  - una `Empresa`
-  - un `JefeDirecto`
-
-### Restricciones y validaciones del modelo
-
-- Email único en usuarios.
-- Email único en empresas.
-- Un usuario no puede duplicarse como estudiante o profesor.
-- La fecha de término no puede ser anterior a la fecha de inicio.
-- La descripción de actividades es obligatoria.
-- El jefe directo debe pertenecer a la empresa indicada.
-
-## Tecnologías utilizadas
+## Stack tecnológico
 
 - Java 21
 - Spring Boot 3.3.4
 - Spring Web
 - Spring Data JPA
-- Hibernate ORM
-- Spring Validation
-- PostgreSQL 15
-- Docker Compose
+- PostgreSQL 15 Alpine
+- Spring Security
+- JWT (JJWT)
 - Maven
+- Docker Compose
+
+## Arquitectura
+
+El proyecto usa un patrón de n capas:
+
+- `entity`: entidades JPA
+- `repository`: repositorios Spring Data
+- `service`: lógica de negocio
+- `controller`: endpoints REST
+- `dto`: objetos de entrada/salida
+- `security`: JWT y configuración de seguridad
+- `exception`: respuestas estandarizadas de errores
+
+## Modelo de dominio
+
+- `Usuario`: modelo base de autenticación con rol (`ESTUDIANTE` / `PROFESOR`)
+- `Estudiante`: datos académicos del alumno
+- `Profesor`: datos académicos del tutor docente
+- `Empresa`: empresa donde se realiza la práctica
+- `JefeDirecto`: responsable de la empresa
+- `Practica`: registro principal de la práctica profesional
 
 ## Requisitos previos
 
-- Java 21 instalado
-- Maven instalado
-- Docker Desktop o Docker Engine activo
-- Puerto 5432 libre para PostgreSQL
-- Puerto 8080 libre para la aplicación
+- Java 21
+- Maven 3.9+
+- Docker Desktop o Docker Engine
+- PostgreSQL 15 (se levanta con Docker Compose)
 
-## Estructura del proyecto
+## Configuración rápida
 
-```text
-ipss-sistema-practicas/
-├── src/
-│   ├── main/
-│   │   ├── java/com/ipss/practicas/
-│   │   │   ├── controller/
-│   │   │   ├── dto/
-│   │   │   ├── entity/
-│   │   │   ├── enums/
-│   │   │   ├── exception/
-│   │   │   ├── repository/
-│   │   │   ├── service/
-│   │   │   └── PracticasProfesionalesApplication.java
-│   │   └── resources/
-│   │       ├── application.properties
-│   │       └── schema.sql
-│   └── test/
-│       └── java/com/ipss/practicas/
-├── docker-compose.yml
-├── pom.xml
-├── README.md
-├── .gitignore
-└── target/
-```
-
-## Configuración de la base de datos
-
-La conexión a PostgreSQL por defecto está definida en `src/main/resources/application.properties`:
-
-```properties
-spring.application.name=ipss-sistema-practicas
-
-spring.datasource.url=jdbc:postgresql://localhost:5432/practicas_db
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.defer-datasource-initialization=true
-spring.sql.init.mode=always
-```
-
-## Levantar PostgreSQL con Docker
-
-Ejecuta:
+### 1. Levantar la base de datos
 
 ```bash
 docker compose up -d
 ```
 
-Esto crea un contenedor con la imagen `postgres:15-alpine` y prepara la base de datos `practicas_db`.
+Esto levanta PostgreSQL en el puerto `5432` usando la imagen `postgres:15-alpine`.
 
-## Scripts de base de datos y datos semilla
+### 2. Configurar variables de entorno
 
-El proyecto incluye dos niveles de inicialización:
+La configuración se parametriza para soportar distintos ambientes sin modificar el código. Se recomienda copiar el archivo `.env.example` a `.env` y ajustar los valores según el entorno.
 
-1. `src/main/resources/schema.sql`: crea la estructura de la base de datos.
-2. `src/main/resources/data.sql`: inserta registros de prueba para verificar el flujo de la API.
-3. `db/init-db.sql`: script manual para recrear la BD y cargar datos semilla desde la línea de comandos.
+```bash
+cp .env.example .env
+```
 
-### Inicialización automática con Spring Boot
-
-Cuando la aplicación arranca, Spring Boot ejecuta automáticamente `schema.sql` y `data.sql` porque la configuración en `application.properties` usa:
+Ejemplo de variables:
 
 ```properties
-spring.sql.init.mode=always
+SPRING_PROFILES_ACTIVE=dev
+DB_URL=jdbc:postgresql://localhost:5432/practicas_db
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+SERVER_PORT=8080
 ```
 
-Esto permite que, al iniciar la app, se creen las tablas y se inserten los registros semilla si la base de datos está vacía.
+En `src/main/resources/application.properties` estas mismas propiedades se leen con placeholders y cuentan con valores por defecto, lo que permite trabajar con distintos entornos (`dev`, `prod`, etc.) sin hardcodear secretos ni URLs.
 
-### Inicialización manual con psql (si tienes cliente local)
-
-Desde la raíz del proyecto:
-
-```bash
-psql -h localhost -U postgres -d practicas_db -f db/init-db.sql
-```
-
-### Inicialización manual usando Docker (recomendado en este entorno)
-
-Si no tienes `psql` instalado localmente, puedes copiar el script al contenedor y ejecutarlo directamente:
-
-```bash
-docker cp db/init-db.sql practicas-postgres:/tmp/init-db.sql
-docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/init-db.sql
-```
-
-También puedes cargar solo los datos semilla:
-
-```bash
-docker cp db/seed.sql practicas-postgres:/tmp/seed.sql
-docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/seed.sql
-```
-
-Si deseas limpiar y reprovisionar la base de datos desde cero:
-
-```bash
-docker exec -i practicas-postgres psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS practicas_db;"
-docker exec -i practicas-postgres psql -U postgres -d postgres -c "CREATE DATABASE practicas_db;"
-docker cp db/init-db.sql practicas-postgres:/tmp/init-db.sql
-docker exec -i practicas-postgres psql -U postgres -d practicas_db -f /tmp/init-db.sql
-```
-
-### Verificar datos semilla
-
-Puedes consultar una tabla de prueba con:
-
-```bash
-docker exec -i practicas-postgres psql -U postgres -d practicas_db -c "SELECT * FROM usuarios;"
-docker exec -i practicas-postgres psql -U postgres -d practicas_db -c "SELECT * FROM practicas;"
-```
-
-## Levantar el proyecto
-
-### 1) Compilar
-
-```bash
-mvn clean install
-```
-
-### 2) Ejecutar la aplicación
+### 3. Ejecutar la aplicación
 
 ```bash
 mvn spring-boot:run
 ```
 
-También puedes ejecutarlo desde el IDE usando la clase principal:
+La API queda disponible en:
 
-```text
-com.ipss.practicas.PracticasProfesionalesApplication
+- http://localhost:8080
+
+## Autenticación y permisos
+
+La app usa JWT para proteger endpoints.
+
+### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@email.com",
+  "password": "123456"
+}
 ```
 
-### URL base
+Respuesta esperada:
 
-```text
-http://localhost:8080
+```json
+{
+  "token": "eyJ...",
+  "email": "ana.garcia@email.com",
+  "rol": "ESTUDIANTE"
+}
 ```
 
-## CRUD implementado
+### Registro
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Mendoza",
+  "email": "pedro.mendoza@email.com",
+  "password": "123456",
+  "rol": "ESTUDIANTE",
+  "carrera": "Ingeniería de Software",
+  "especialidad": null
+}
+```
+
+## Usuarios semilla por defecto
+
+Estos usuarios se cargan con datos semilla para pruebas:
+
+- Ana García - estudiante - `ana.garcia@email.com` - `123456`
+- Luis Pérez - profesor - `luis.perez@email.com` - `123456`
+- Marta Ruiz - estudiante - `marta.ruiz@email.com` - `123456`
+
+## Endpoints principales
+
+### Autenticación
+
+- `POST /api/auth/login`
+- `POST /api/auth/register`
 
 ### Usuarios
 
@@ -272,123 +195,118 @@ http://localhost:8080
 - `PUT /api/practicas/{id}`
 - `DELETE /api/practicas/{id}`
 
-## Ejemplos de payload
+## Ejemplos de uso
 
-### Crear usuario
+### Crear una empresa
 
-```json
+```http
+POST /api/empresas
+Authorization: Bearer <token>
+Content-Type: application/json
+
 {
-  "nombre": "Ana",
-  "apellido": "García",
-  "email": "ana@mail.com",
-  "password": "123456",
-  "rol": "ESTUDIANTE"
-}
-```
-
-### Crear estudiante
-
-```json
-{
-  "usuarioId": 1,
-  "carrera": "Informática",
-  "telefono": "987654321",
-  "direccion": "Av. Central 123"
-}
-```
-
-### Crear profesor
-
-```json
-{
-  "usuarioId": 2,
-  "especialidad": "Programación",
-  "cargo": "Docente"
-}
-```
-
-### Crear empresa
-
-```json
-{
-  "nombre": "IPSS Tech",
-  "direccion": "Calle Falsa 123",
-  "telefono": "5551234",
-  "email": "contacto@ipsstech.cl",
+  "nombre": "ACME Tecnología",
+  "direccion": "Av. Los Copihues 245",
+  "telefono": "+56912345678",
+  "email": "rrhh@acme.cl",
   "descripcion": "Empresa de desarrollo de software"
 }
 ```
 
-### Crear jefe directo
+### Crear una práctica
 
-```json
-{
-  "nombre": "Carlos",
-  "apellido": "Molina",
-  "cargo": "Ingeniero de proyecto",
-  "telefono": "912345678",
-  "email": "carlos@ipsstech.cl",
-  "empresaId": 1
-}
-```
+```http
+POST /api/practicas
+Authorization: Bearer <token>
+Content-Type: application/json
 
-### Crear práctica
-
-```json
 {
   "estudianteId": 1,
   "profesorId": 1,
   "empresaId": 1,
   "jefeDirectoId": 1,
-  "fechaInicio": "2026-03-10",
-  "fechaTermino": "2026-05-10",
-  "descripcionActividades": "Desarrollar módulos backend y participar en reuniones de coordinación."
+  "fechaInicio": "2025-01-15",
+  "fechaTermino": "2025-03-15",
+  "descripcionActividades": "Desarrollo de APIs y documentación del módulo de usuarios"
 }
 ```
 
-## Manejo de errores
+## Base de datos y scripts SQL
 
-Se implementó un `@RestControllerAdvice` para devolver respuestas estructuradas en caso de:
+La base de datos puede inicializarse mediante scripts preparados en la carpeta `db/`.
 
-- recurso no encontrado
-- validación fallida
-- error de negocio
-- argumentos inválidos
-
-Ejemplo de respuesta:
-
-```json
-{
-  "timestamp": "2026-09-06T20:00:00",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "La fecha de término no puede ser menor que la de inicio"
-}
-```
-
-## Validaciones implementadas
-
-- campos obligatorios
-- longitudes máximas
-- email válido
-- contraseña mínima
-- fecha de término >= fecha de inicio
-- relación consistente entre empresa y jefe directo
-- unicidad de usuarios y empresas
-- restricción de roles por entidad
-
-## Ejecución de pruebas
+### Crear y recrear la BD
 
 ```bash
+psql -U postgres -d postgres -f db/init-db.sql
+```
+
+### Cargar únicamente datos semilla
+
+```bash
+psql -U postgres -d ipss_practicas -f db/seed.sql
+```
+
+También la aplicación carga datos iniciales automáticamente con `schema.sql` y `data.sql` al arrancar, si `spring.sql.init.mode=always` está habilitado.
+
+## Datos semilla y pruebas
+
+Los scripts incorporados permiten validar rápidamente la funcionalidad con registros de prueba pre-cargados. Esto reduce la necesidad de crear datos manualmente para cada flujo de validación.
+
+## Colección Bruno
+
+Se incluye una colección de Bruno para probar todos los endpoints desde una herramienta HTTP visual:
+
+- `bruno/bruno.json`
+- `bruno/environments/local.bru`
+- `bruno/*.bru`
+
+Para usarla:
+
+1. Abrir Bruno.
+2. Importar la carpeta `bruno/`.
+3. Confirmar que `baseUrl` apunte a `http://localhost:8080`.
+4. Ejecutar login para obtener el token JWT.
+5. Copiar el token en la variable `token` del entorno.
+6. Asegurarse de que la cabecera `Authorization` esté en una línea separada y no con comas, por ejemplo:
+   `Authorization: Bearer {{token}}`
+
+## Documentación adicional
+
+- `docs/informe-tecnico.md`: diagrama de base de datos y explicación de la solución implementada.
+
+## Estado del proyecto
+
+Actualmente el proyecto cumple con:
+
+- Java 21 + Spring Boot 3.3.4
+- PostgreSQL 15 con Docker
+- JPA para persistencia
+- Patrones en capas
+- CRUD completo
+- Validaciones de backend
+- JWT + autenticación
+- roles por perfil
+- semilla de datos para pruebas
+- documentación técnica y de uso
+
+## Comandos útiles
+
+```bash
+# levantar BD
+
+docker compose up -d
+
+# compilar proyecto
+mvn clean package
+
+# ejecutar app
+mvn spring-boot:run
+
+# correr tests
 mvn test
 ```
 
-## Observaciones finales
+## Notas finales
 
-- El proyecto usa `schema.sql` para crear la estructura inicial de la base de datos.
-- La solución está preparada para ser extendida con autenticación, seguridad y capa de UI.
-- Sigue un patrón de n capas para facilitar mantenimiento, escalabilidad y prueba unitaria.
-
-## Licencia
-
-Este proyecto se desarrolla como parte de la evaluación de la unidad para el curso de Desarrollo de Software Web 2.
+El proyecto quedó listo para levantar en entorno local, probar con datos reales de ejemplo y extender con nuevas funcionalidades según los requisitos del negocio.
