@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS practicas (
     id BIGSERIAL PRIMARY KEY,
     fecha_inicio DATE NOT NULL,
     fecha_termino DATE NOT NULL,
-    descripcion_actividades TEXT NOT NULL,
+    descripcion_actividades VARCHAR(1000) NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'EN_CURSO', 'FINALIZADA', 'RECHAZADA')),
     estudiante_id BIGINT NOT NULL,
     profesor_id BIGINT NOT NULL,

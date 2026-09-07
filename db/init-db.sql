@@ -55,7 +55,7 @@ CREATE TABLE practicas (
     id BIGSERIAL PRIMARY KEY,
     fecha_inicio DATE NOT NULL,
     fecha_termino DATE NOT NULL,
-    descripcion_actividades TEXT NOT NULL,
+    descripcion_actividades VARCHAR(1000) NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'EN_CURSO', 'FINALIZADA', 'RECHAZADA')),
     estudiante_id BIGINT NOT NULL,
     profesor_id BIGINT NOT NULL,
@@ -70,9 +70,9 @@ CREATE TABLE practicas (
 
 INSERT INTO usuarios (id, nombre, apellido, email, password, rol)
 VALUES
-    (1, 'Ana', 'García', 'ana.garcia@email.com', '123456', 'ESTUDIANTE'),
-    (2, 'Luis', 'Pérez', 'luis.perez@email.com', '123456', 'PROFESOR'),
-    (3, 'Marta', 'Ruiz', 'marta.ruiz@email.com', '123456', 'ESTUDIANTE')
+    (1, 'Ana', 'García', 'ana.garcia@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'ESTUDIANTE'),
+    (2, 'Luis', 'Pérez', 'luis.perez@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'PROFESOR'),
+    (3, 'Marta', 'Ruiz', 'marta.ruiz@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'ESTUDIANTE')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO estudiantes (id, usuario_id, carrera, telefono, direccion)

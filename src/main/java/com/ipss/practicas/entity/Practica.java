@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -45,8 +44,7 @@ public class Practica {
     private LocalDate fechaTermino;
 
     @NotBlank
-    @Lob
-    @Column(name = "descripcion_actividades", nullable = false)
+    @Column(name = "descripcion_actividades", nullable = false, length = 1000)
     private String descripcionActividades;
 
     @Enumerated(EnumType.STRING)

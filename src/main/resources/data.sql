@@ -1,16 +1,16 @@
 INSERT INTO usuarios (id, nombre, apellido, email, password, rol)
 VALUES
-    (1, 'Ana', 'García', 'ana.garcia@email.com', '123456', 'ESTUDIANTE')
+    (1, 'Ana', 'García', 'ana.garcia@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'ESTUDIANTE')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO usuarios (id, nombre, apellido, email, password, rol)
 VALUES
-    (2, 'Luis', 'Pérez', 'luis.perez@email.com', '123456', 'PROFESOR')
+    (2, 'Luis', 'Pérez', 'luis.perez@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'PROFESOR')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO usuarios (id, nombre, apellido, email, password, rol)
 VALUES
-    (3, 'Marta', 'Ruiz', 'marta.ruiz@email.com', '123456', 'ESTUDIANTE')
+    (3, 'Marta', 'Ruiz', 'marta.ruiz@email.com', '$2b$12$JrPZeKTia64eEuh5AK4M0uv9QldZX5rOpvWX.oWMUdQ4ibKHKM1CW', 'ESTUDIANTE')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO estudiantes (id, usuario_id, carrera, telefono, direccion)
